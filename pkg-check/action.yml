@@ -100,7 +100,7 @@ runs:
          fi
          PKGTYPE=both
        fi
-       R_LIBS=$BLDIR/Rlib Rscript -e "tools::write_PACKAGES('$SAFEDIR/repo/src/contrib',type='source'); install.packages('$PACKAGE',,c('$REPOURL','https://cran.R-project.org'), type='$PKGTYPE', dependencies=TRUE)"
+       R_LIBS=$BLDIR/Rlib Rscript -e "tools::write_PACKAGES('$SAFEDIR/repo/src/contrib',type='source'); install.packages('$PACKAGE',,c('$REPOURL','https://cloud.R-project.org'), type='$PKGTYPE', dependencies=TRUE)"
        echo '::endgroup::'
      shell: bash
 
