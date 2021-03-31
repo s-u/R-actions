@@ -46,7 +46,7 @@ runs:
        if [ -z "$BLCMD" ]; then 
          BLCMD="cd $BLDIR && R CMD build $SRCDIR"
        fi
-       ($BLCMD)
+       bash -c "$BLCMD"
        SRCTAR=`ls -d $BLDIR/${PACKAGE}_*tar.gz`
        if [ -z "$SRCTAR" ]; then echo "::error ::ERROR: cannot build package tar ball"; exit 1; fi
        ls -l $SRCTAR
