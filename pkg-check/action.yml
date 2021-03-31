@@ -42,11 +42,11 @@ runs:
        R --version | head -n4
        SRCDIR="$(cd ${{ inputs.pkg-path }} && pwd)"
        BLDIR="$(cd $SRCDIR/.. && pwd)"
-       if [ -z "${{ inputs.build-script }}" ]; then 
-         cd $BLDIR && R CMD build $SRCDIR
-       else
-         ${{ inputs.build-script }} ;
+       BLCMD="${{ inputs.build-script }}"
+       if [ -z "$BLCMD" ]; then 
+         BLCMD="cd $BLDIR && R CMD build $SRCDIR'
        fi
+       ($BLCMD)
        SRCTAR=`ls -d $BLDIR/${PACKAGE}_*tar.gz`
        if [ -z "$SRCTAR" ]; then echo "::error ::ERROR: cannot build package tar ball"; exit 1; fi
        ls -l $SRCTAR
