@@ -5,8 +5,8 @@ inputs:
     description: 'path containing the DESCRIPTION file'
     required: false
     default: '.'
-  linux-deps:
-    description: 'list of system-level Linux dependencies'
+  debian-deps:
+    description: 'list of system-level Debian/Ubuntu dependencies'
     required: false
     default: ''
   macos-deps:
@@ -15,6 +15,10 @@ inputs:
     default: ''
   check-flags:
     description: 'additional flags to use in R CMD check'
+    required: false
+    default: ''
+  build-script:
+    description: 'build script to run in the repository instead of R CMD build. It must create the package tar ball one level up.'
     required: false
     default: ''
 outputs:
@@ -38,7 +42,11 @@ runs:
        R --version | head -n4
        SRCDIR="$(cd ${{ inputs.pkg-path }} && pwd)"
        BLDIR="$(cd $SRCDIR/.. && pwd)"
-       cd $BLDIR && R CMD build $SRCDIR
+       if [ -z "${{ build-script }}" ]; then 
+         cd $BLDIR && R CMD build $SRCDIR
+       else
+         ${{ build-script }}
+       fi
        SRCTAR=`ls -d $BLDIR/${PACKAGE}_*tar.gz`
        if [ -z "$SRCTAR" ]; then echo "::error ::ERROR: cannot build package tar ball"; exit 1; fi
        ls -l $SRCTAR
@@ -50,9 +58,9 @@ runs:
 
    - name: Install Linux dependencies
      run: |
-       if [ "${{ runner.os }}" = Linux -a -n "${{ inputs.linux-deps }}" ]; then
+       if [ "${{ runner.os }}" = Linux -a -n "${{ inputs.debian-deps }}" ]; then
          echo "::group::Install Linux system dependencies"
-         sudo apt-get install -y ${{ inputs.linux-deps }}
+         sudo apt-get install -y ${{ inputs.debian-deps }}
          echo '::endgroup::'
        fi
      shell: bash
