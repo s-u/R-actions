@@ -44,7 +44,7 @@ runs:
        BLDIR="$(cd $SRCDIR/.. && pwd)"
        BLCMD="${{ inputs.build-script }}"
        if [ -z "$BLCMD" ]; then 
-         BLCMD="cd $BLDIR && R CMD build $SRCDIR'
+         BLCMD="cd $BLDIR && R CMD build $SRCDIR"
        fi
        ($BLCMD)
        SRCTAR=`ls -d $BLDIR/${PACKAGE}_*tar.gz`
