@@ -78,6 +78,20 @@ runs:
        fi
      shell: bash
 
+   - name: Install Windows dependencies
+     run: |
+       if [ "${{ runner.os }}" = Windows -a -n "${{ inputs.windows-deps }}" ]; then
+         echo "::group::Install Windows system dependencies"
+         for i in ${{ inputs.windows-deps }}; do
+           echo -n "  $i"
+           lib=`echo "${{ inputs.windows-deps }}" | cut -d- -f1`
+           ver=`echo "${{ inputs.windows-deps }}" | cut -d- -f2`
+           curl -s https://github.com/rwinlib/$lib/archive/v$ver.zip | unzip -d ../windows
+         done
+         echo ''         echo '::endgroup::'
+       fi
+     shell: bash
+     
    - name: Install package and dependencies
      run: |
        echo "::group::Install $PACKAGE and dependencies"
