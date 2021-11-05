@@ -13,6 +13,10 @@ inputs:
     description: 'list of system-level macOS dependencies'
     required: false
     default: ''
+  windows-deps:
+    description: 'list of system-level Windows dependencies'
+    required: false
+    default: ''
   check-flags:
     description: 'additional flags to use in R CMD check'
     required: false
