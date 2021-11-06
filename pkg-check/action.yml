@@ -111,18 +111,18 @@ runs:
        cp $SRCTAR $BLDIR/repo/src/contrib
        REPOURL="file://$BLDIR/repo"
        if [ "${{ runner.os }}" = Linux -o "${{ inputs.dep-type }}" = source ]; then
-         PKGTYPE=source;
-       else
+         PKGTYPE=source
+       else ## create a fake, empty binary repo
          BRPATH=$BLDIR/repo`Rscript -e 'cat(contrib.url('\'\'',.Platform$pkgType))'`
          echo Binary install - target repo is $BRPATH
          mkdir -p $BRPATH
          echo '' > $BRPATH/PACKAGES
          ls -l $BRPATH
-         if [ "${{ runner.os }}" = Windows ]; then
-           SAFEDIR=$(cd $BLDIR && Rscript -e 'cat(getwd())')
-           REPOURL="file:$SAFEDIR/repo"
-         fi
          PKGTYPE=both
+       fi
+       if [ "${{ runner.os }}" = Windows ]; then
+         SAFEDIR=$(cd $BLDIR && Rscript -e 'cat(getwd())')
+         REPOURL="file:$SAFEDIR/repo"
        fi
        R_LIBS=$BLDIR/Rlib Rscript -e "\
          tools::write_PACKAGES('$SAFEDIR/repo/src/contrib',type='source'); \
