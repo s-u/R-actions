@@ -26,7 +26,7 @@ inputs:
     required: false
     default: ''
   dep-type:
-    description: 'installation type for package dependecies, use "source" to force re-building of dependencies or "both" (default) to re-use CRAN binaries if present and re-build otherwise"
+    description: 'installation type for package dependecies, use "source" to force re-building of dependencies or "both" (default) to re-use CRAN binaries if present and re-build otherwise'
     required: false
     default: 'both'
 outputs:
