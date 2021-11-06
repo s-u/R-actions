@@ -25,6 +25,10 @@ inputs:
     description: 'build script to run in the repository instead of R CMD build. It must create the package tar ball one level up.'
     required: false
     default: ''
+  dep-type:
+    description: 'installation type for package dependecies, use "source" to force re-building of dependencies or "both" (default) to re-use CRAN binaries if present and re-build otherwise"
+    required: false
+    default: 'both'
 outputs:
   pkg-name:
     description: 'Package name'
@@ -106,7 +110,7 @@ runs:
        SAFEDIR=$BLDIR
        cp $SRCTAR $BLDIR/repo/src/contrib
        REPOURL="file://$BLDIR/repo"
-       if [ "${{ runner.os }}" = Linux ]; then
+       if [ "${{ runner.os }}" = Linux -o "${{ inputs.dep-type }}" = source ]; then
          PKGTYPE=source;
        else
          BRPATH=$BLDIR/repo`Rscript -e 'cat(contrib.url('\'\'',.Platform$pkgType))'`
@@ -122,7 +126,7 @@ runs:
        fi
        R_LIBS=$BLDIR/Rlib Rscript -e "\
          tools::write_PACKAGES('$SAFEDIR/repo/src/contrib',type='source'); \
-         chooseCRANmirror(graphics=FALSE, ind=1, local.only=TRUE); \
+         if (isTRUE('@CRAN@' %in% getOption('repos'))) chooseCRANmirror(graphics=FALSE, ind=1, local.only=TRUE); \
          install.packages('$PACKAGE',,c('$REPOURL',getOption('repos')), type='$PKGTYPE', dependencies=TRUE) \
        "
        echo '::endgroup::'
