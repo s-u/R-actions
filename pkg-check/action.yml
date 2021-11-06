@@ -13,6 +13,10 @@ inputs:
     description: 'list of system-level macOS dependencies'
     required: false
     default: ''
+  windows-deps:
+    description: 'list of system-level Windows dependencies'
+    required: false
+    default: ''
   check-flags:
     description: 'additional flags to use in R CMD check'
     required: false
@@ -40,6 +44,7 @@ runs:
      run: |
        echo "::group::Building $PACKAGE tar ball"
        R --version | head -n4
+       rm -f toolchain.tar.zst ## fix for UCRT, just in case it's left over...
        SRCDIR="$(cd ${{ inputs.pkg-path }} && pwd)"
        BLDIR="$(cd $SRCDIR/.. && pwd)"
        BLCMD="${{ inputs.build-script }}"
@@ -57,17 +62,16 @@ runs:
      shell: bash
 
    - name: Install Linux dependencies
+     if: ${{ runner.os == 'Linux' && inputs.debian-deps != '' }}
      run: |
-       if [ "${{ runner.os }}" = Linux -a -n "${{ inputs.debian-deps }}" ]; then
          echo "::group::Install Linux system dependencies"
          sudo apt-get install -y ${{ inputs.debian-deps }}
          echo '::endgroup::'
-       fi
      shell: bash
 
    - name: Install macOS dependencies
+     if: ${{ runner.os == 'macOS' && inputs.macos-deps != '' }}
      run: |
-       if [ "${{ runner.os }}" = macOS -a -n "${{ inputs.macos-deps }}" ]; then
          echo "::group::Install macOS system dependencies"
          for i in ${{ inputs.macos-deps }}; do
            echo -n "  $i"
@@ -75,7 +79,23 @@ runs:
          done
          echo ''
          echo '::endgroup::'
+     shell: bash
+
+   - name: Install Windows dependencies
+     if: ${{ runner.os == 'Windows' && inputs.windows-deps != '' }}
+     run: |
+       echo "::group::Install Windows system dependencies"
+       if which pacman 2>/dev/null; then
+         pacman -Sy
+         for i in ${{ inputs.windows-deps }}; do
+           pacman --sync --noconfirm mingw-w64-i686-$i mingw-w64-x86_64-$i
+         done
+       else
+         echo "NOTE: pacman not found, assuming UCRT toolchain which already contains dependencies"
+         echo "      see https://github.com/kalibera/ucrt3 for corresponding action"
        fi
+       echo ''
+       echo '::endgroup::'
      shell: bash
 
    - name: Install package and dependencies
