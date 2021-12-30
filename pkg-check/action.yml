@@ -29,6 +29,10 @@ inputs:
     description: 'installation type for package dependecies, use "source" to force re-building of dependencies or "both" (default) to re-use CRAN binaries if present and re-build otherwise'
     required: false
     default: 'both'
+  cran:
+    description: 'URL to the CRAN mirror to use'
+    required: false
+    default: 'https://cloud.R-project.org'
 outputs:
   pkg-name:
     description: 'Package name'
@@ -50,7 +54,7 @@ runs:
 
    - name: Build package tar ball
      shell: bash
-     run: bash ${{ github.action_path }}/build.sh
+     run: bash '${{ github.action_path }}/build.sh'
 
    - name: Install Linux dependencies
      if: ${{ runner.os == 'Linux' && inputs.debian-deps != '' }}
@@ -87,7 +91,7 @@ runs:
      shell: bash
 
    - name: Install package and dependencies
-     run: bash ${{ github.action_path }}/install.sh "${{ runner.os }}" "${{ inputs.dep-type }}" "${{ inputs.cran }}"
+     run: bash '${{ github.action_path }}/install.sh' '${{ runner.os }}' '${{ inputs.dep-type }}' '${{ inputs.cran }}'
      shell: bash
 
    - name: R CMD check
