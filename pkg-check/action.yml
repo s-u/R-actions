@@ -68,7 +68,7 @@ runs:
      if: ${{ runner.os == 'macOS' && inputs.macos-deps != '' }}
      run: |
          echo "::group::Install macOS system dependencies"
-         sudo Rscript -e 'pkgs=unlist(strsplit("${{ inputs.macos-deps }}", ", *")); capture.output(source("https://mac.R-project.org/bin/install.R")); install.libs(pkgs)'
+         sudo Rscript -e 'pkgs=unlist(strsplit("${{ inputs.macos-deps }}", " +")); q<-capture.output(source("https://mac.R-project.org/bin/install.R")); install.libs(pkgs)'
          echo ''
          echo '::endgroup::'
      shell: bash
