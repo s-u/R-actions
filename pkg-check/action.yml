@@ -36,34 +36,20 @@ outputs:
 runs:
   using: 'composite'
   steps:
-   - name: Identify package
+   - name: Setup
      run: |
-       PACKAGE=$(sed -n 's/^Package: *//p' ${{ inputs.pkg-path }}/DESCRIPTION)
+       SRCDIR="$(cd ${{ inputs.pkg-path }} && pwd)"     
+       PACKAGE=$(sed -n 's/^Package: *//p' $SRCDIR/DESCRIPTION)
+       BLCMD="${{ inputs.build-script }}"
        echo " === Package $PACKAGE ==="
        echo "PACKAGE=$PACKAGE" >> $GITHUB_ENV
+       echo "SRCDIR=$SRCDIR" >> $GITHUB_ENV
+       echo "BLCMD=$BLCMD" >> $GITHUB_ENV
        if [ -z "$PACKAGE" ]; then echo "::error ::ERROR: invalid package, Package: entry not found"; exit 1; fi
      shell: bash
 
-   - name: Build
-     run: |
-       echo "::group::Building $PACKAGE tar ball"
-       R --version | head -n4
-       rm -f toolchain.tar.zst ## fix for UCRT, just in case it's left over...
-       SRCDIR="$(cd ${{ inputs.pkg-path }} && pwd)"
-       BLDIR="$(cd $SRCDIR/.. && pwd)"
-       BLCMD="${{ inputs.build-script }}"
-       if [ -z "$BLCMD" ]; then 
-         BLCMD="cd $BLDIR && R CMD build $SRCDIR"
-       fi
-       bash -c "$BLCMD"
-       SRCTAR=`ls -d $BLDIR/${PACKAGE}_*tar.gz`
-       if [ -z "$SRCTAR" ]; then echo "::error ::ERROR: cannot build package tar ball"; exit 1; fi
-       ls -l $SRCTAR
-       echo SRCTAR=$SRCTAR >> $GITHUB_ENV
-       echo SRCDIR=$SRCDIR >> $GITHUB_ENV
-       echo BLDIR=$BLDIR >> $GITHUB_ENV
-       echo '::endgroup::'
-     shell: bash
+   - name: Build package tar ball
+     run: bash ${{ github.action_path }}/build.sh
 
    - name: Install Linux dependencies
      if: ${{ runner.os == 'Linux' && inputs.debian-deps != '' }}
@@ -77,10 +63,7 @@ runs:
      if: ${{ runner.os == 'macOS' && inputs.macos-deps != '' }}
      run: |
          echo "::group::Install macOS system dependencies"
-         for i in ${{ inputs.macos-deps }}; do
-           echo -n "  $i"
-           curl -s https://mac.r-project.org/libs-4/$i-darwin.17-x86_64.tar.gz | sudo tar fxz - --strip 2 -C /usr/local
-         done
+	 Rscript -e 'pkgs=unlist(strsplit("${{ inputs.macos-deps }}", ", *")); source("https://mac.R-project.org/bin/install.R"); install.libs(pkgs)'
          echo ''
          echo '::endgroup::'
      shell: bash
@@ -103,33 +86,7 @@ runs:
      shell: bash
 
    - name: Install package and dependencies
-     run: |
-       echo "::group::Install $PACKAGE and dependencies"
-       mkdir -p $BLDIR/repo/src/contrib
-       mkdir $BLDIR/Rlib
-       SAFEDIR=$BLDIR
-       cp $SRCTAR $BLDIR/repo/src/contrib
-       REPOURL="file://$BLDIR/repo"
-       if [ "${{ runner.os }}" = Linux -o "${{ inputs.dep-type }}" = source ]; then
-         PKGTYPE=source
-       else ## create a fake, empty binary repo
-         BRPATH=$BLDIR/repo`Rscript -e 'cat(contrib.url('\'\'',.Platform$pkgType))'`
-         echo Binary install - target repo is $BRPATH
-         mkdir -p $BRPATH
-         echo '' > $BRPATH/PACKAGES
-         ls -l $BRPATH
-         PKGTYPE=both
-       fi
-       if [ "${{ runner.os }}" = Windows ]; then
-         SAFEDIR=$(cd $BLDIR && Rscript -e 'cat(getwd())')
-         REPOURL="file:$SAFEDIR/repo"
-       fi
-       R_LIBS=$BLDIR/Rlib Rscript -e "\
-         tools::write_PACKAGES('$SAFEDIR/repo/src/contrib',type='source'); \
-         if (isTRUE('@CRAN@' %in% getOption('repos'))) chooseCRANmirror(graphics=FALSE, ind=1, local.only=TRUE); \
-         install.packages('$PACKAGE',,c('$REPOURL',getOption('repos')), type='$PKGTYPE', dependencies=TRUE) \
-       "
-       echo '::endgroup::'
+     run: bash ${{ github.action_path }}/install.sh "${{ runner.os }}" "${{ inputs.dep-type }}" "${{ inputs.cran }}"
      shell: bash
 
    - name: R CMD check
@@ -140,5 +97,6 @@ runs:
        echo R_LIBS=$BLDIR/Rlib R CMD check ${{ inputs.check-flags }} $XTRA $SRCTAR
        cd $BLDIR
        R_LIBS=$BLDIR/Rlib R CMD check ${{ inputs.check-flags }} $XTRA $SRCTAR
+       cp -r $BLDIR/*.Rcheck $SRCDIR/
        echo '::endgroup::'
      shell: bash
