@@ -9,7 +9,7 @@ GitHub action to build, install and check an R package.
 Minimal example:
 
 ```yaml
-  - uses: s-u/R-actions/pkg-check@master
+  - uses: s-u/R-actions/pkg-check@v1
 ```
 
 By default it expects the package's `DESCRIPTION` file in the root of the repository and no systems dependencies. It will run `R CMD build`, automatically install package dependencies from CRAN, run `R CMD INSTALL` and finally `R CMD check`.
@@ -40,7 +40,7 @@ By default it expects the package's `DESCRIPTION` file in the root of the reposi
 
 A real example with external system dependencies:
 ```yaml
-  - uses: s-u/R-actions/pkg-check@master
+  - uses: s-u/R-actions/pkg-check@v1
     with:
       debian-deps: libtiff-dev
       macos-deps: pkgconfig-0.28 xz-5.2.4 jpeg-9 tiff-4.1.0
@@ -74,3 +74,25 @@ jobs:
 ```
 
 __NOTE__: The action does not modify the R configuration, it will use whichever R version has been provided. Therefore it is common to combine this action with something like `r-lib/actions/setup-r@master` to add multiple R versions to the check matrix.
+
+## tinytex
+
+GitHub action to install [TinyTex](https://yihui.org/tinytex/)
+
+Minimal example:
+
+```yaml
+  - uses: s-u/R-actions/tinytex@v1
+```
+
+The runners don't have TeX by default so if you want to be able to check R package manuals, you will need to install it in some way and this action is just one of the possible ways.
+
+## Inputs
+
+* `flavor`
+
+    Optional name of the distribution. The possible values are release names from [tinytex-releases](https://github.com/yihui/tinytex-releases) with `TinyTeX` as default. `TinyTeX-1` is the minimal distribution for R packages.
+
+* `version`
+
+    Optional TinyTeX version number. Defaults to `latest` which is the latest daily release. See [releases](https://github.com/yihui/tinytex-releases/releases) for available version numbers.
