@@ -1,0 +1,41 @@
+name: 'TinyTeX'
+description: 'Installs TinyTeX'
+inputs:
+  flavor:
+    description: 'Flavor of TinyTeX to install'
+    required: false
+    default: 'TinyTeX'
+  version:
+    description: 'Version of TinyTeX to install'
+    required: false
+    default: 'latest'
+runs:
+  using: 'composite'
+  steps:
+   - name: Install TinyTeX
+     run: |
+       TINYTEX_INSTALLER="${{ inputs.flavor }}"
+       TINYTEX_VERSION="${{ inputs.version }}"
+       echo " Installing ${TINYTEX_INSTALLER} ${TINYTEX_VERSION}"
+       if [ x${TINYTEX_VERSION} = xlatest ]; then
+          TINYTEX_URL="https://github.com/yihui/tinytex-releases/releases/download/daily/$TINYTEX_INSTALLER"
+       else
+          TINYTEX_URL="https://github.com/yihui/tinytex-releases/releases/download/v$TINYTEX_VERSION/$TINYTEX_INSTALLER-v$TINYTEX_VERSION"
+       fi
+       OSNAME=$(uname)
+       TEXDIR=~/TinyTeX
+       if [ $OSNAME = 'Darwin' ]; then
+         curl -L -f --retry 10 --retry-delay 30 ${TINYTEX_URL}.tgz -o TinyTeX.tgz
+         tar xzf TinyTeX.tgz -C $(dirname $TEXDIR)
+         rm TinyTeX.tgz
+       else
+         wget --retry-connrefused --progress=dot:giga -O TinyTeX.tar.gz ${TINYTEX_URL}.tar.gz
+         tar xzf TinyTeX.tar.gz -C $(dirname $TEXDIR)
+         rm TinyTeX.tar.gz
+       fi
+       cd $TEXDIR/bin/*/
+       sudo ./tlmgr option sys_bin /usr/local/bin
+       ./tlmgr postaction install script xetex  # GH issue #313
+       ./tlmgr option repository ctan
+       ./tlmgr path add
+     shell: bash
