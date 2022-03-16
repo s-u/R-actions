@@ -23,19 +23,38 @@ runs:
           TINYTEX_URL="https://github.com/yihui/tinytex-releases/releases/download/v$TINYTEX_VERSION/$TINYTEX_INSTALLER-v$TINYTEX_VERSION"
        fi
        OSNAME=$(uname)
+       echo OSNAME=$OSNAME
        TEXDIR=~/TinyTeX
-       if [ $OSNAME = 'Darwin' ]; then
+       if [ $OSNAME = Darwin ]; then
          curl -L -f --retry 10 --retry-delay 30 ${TINYTEX_URL}.tgz -o TinyTeX.tgz
          tar xzf TinyTeX.tgz -C $(dirname $TEXDIR)
          rm TinyTeX.tgz
        else
-         wget --retry-connrefused --progress=dot:giga -O TinyTeX.tar.gz ${TINYTEX_URL}.tar.gz
-         tar xzf TinyTeX.tar.gz -C $(dirname $TEXDIR)
-         rm TinyTeX.tar.gz
+         if [ ${{ runner.os }} = Windows ]; then
+           powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest ${TINYTEX_URL}.zip -OutFile TinyTeX.zip"
+           7z x TinyTeX.zip
+           rm TinyTeX.zip
+           mv TinyTex ~/TinyTeX
+         else
+           wget --retry-connrefused --progress=dot:giga -O TinyTeX.tar.gz ${TINYTEX_URL}.tar.gz
+           tar xzf TinyTeX.tar.gz -C ~
+           rm TinyTeX.tar.gz
+           mv ~/.TinyTeX $TEXDIR
+         fi
        fi
        cd $TEXDIR/bin/*/
-       sudo ./tlmgr option sys_bin /usr/local/bin
-       ./tlmgr postaction install script xetex  # GH issue #313
-       ./tlmgr option repository ctan
-       ./tlmgr path add
+       TTBIN=$(pwd)
+       echo Binaries in $TTBIN
+       TLMGR=./tlmgr
+       if [ ${{ runner.os }} = Windows ]; then
+         chmod +x tlmgr.bat
+         TLMGR=./tlmgr.bat
+         cygpath -w $TTBIN >> ${GITHUB_PATH}
+       else
+         echo $TTBIN >> ${GITHUB_PATH}
+         sudo ./tlmgr option sys_bin /usr/local/bin
+       fi
+       $TLMGR postaction install script xetex  # GH issue #313
+       $TLMGR option repository ctan
+       $TLMGR path add
      shell: bash
