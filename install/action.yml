@@ -17,7 +17,7 @@ runs:
      run: |
        # Install R
        # Connectivity can be flaky, so allow retries
-       RCURL='curl --retry 4 --retry-all-errors -fsSL'
+       RCURL='curl --retry 4 -fsSL'
        if [ ${{ runner.os }} = Linux ]; then
          . /etc/os-release
          ## form OS like ubuntu-22.04
