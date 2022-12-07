@@ -156,7 +156,7 @@ runs:
          echo '::endgroup::'
        fi
        if [ -d "${PACKAGE}.Rcheck/tests" ]; then
-         for tf in `ls "${PACKAGE}.Rcheck/test/"*.Rout 2>/dev/null`; do
+         for tf in `ls "${PACKAGE}.Rcheck/tests/"*.Rout 2>/dev/null`; do
            echo "::group::$tf"
            cat "$tf"
            echo '::endgroup::'
