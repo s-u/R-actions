@@ -38,6 +38,7 @@ runs:
   steps:
    - name: Identify package
      run: |
+       # Verifying package structure
        PACKAGE=$(sed -n 's/^Package: *//p' ${{ inputs.pkg-path }}/DESCRIPTION)
        echo " === Package $PACKAGE ==="
        echo "PACKAGE=$PACKAGE" >> $GITHUB_ENV
@@ -46,6 +47,7 @@ runs:
 
    - name: Build
      run: |
+       # Build ${{ env.PACKAGE }}
        echo "::group::Building $PACKAGE tar ball"
        R --version | head -n4
        rm -f toolchain.tar.zst ## fix for UCRT, just in case it's left over...
@@ -68,6 +70,7 @@ runs:
    - name: Install Linux dependencies
      if: ${{ runner.os == 'Linux' && inputs.debian-deps != '' }}
      run: |
+         # apt-get install
          echo "::group::Install Linux system dependencies"
          sudo apt-get install -y ${{ inputs.debian-deps }}
          echo '::endgroup::'
@@ -76,10 +79,11 @@ runs:
    - name: Install macOS dependencies
      if: ${{ runner.os == 'macOS' && inputs.macos-deps != '' }}
      run: |
+         # Installation from mac.R-project.org
          echo "::group::Install macOS system dependencies"
          for i in ${{ inputs.macos-deps }}; do
            echo -n "  $i"
-           curl -s https://mac.r-project.org/libs-4/$i-darwin.17-x86_64.tar.gz | sudo tar fxz - --strip 2 -C /usr/local
+           curl -s https://mac.r-project.org/bin/darwin17/x86_64/$i-darwin.17-x86_64.tar.xz | sudo tar fxj - --strip 2 -C /usr/local
          done
          echo ''
          echo '::endgroup::'
@@ -88,6 +92,7 @@ runs:
    - name: Install Windows dependencies
      if: ${{ runner.os == 'Windows' && inputs.windows-deps != '' }}
      run: |
+       # pacman
        echo "::group::Install Windows system dependencies"
        if which pacman 2>/dev/null; then
          pacman -Sy
@@ -104,6 +109,7 @@ runs:
 
    - name: Install package and dependencies
      run: |
+       # Package installation
        echo "::group::Install $PACKAGE and dependencies"
        mkdir -p $BLDIR/repo/src/contrib
        mkdir $BLDIR/Rlib
@@ -134,11 +140,26 @@ runs:
 
    - name: R CMD check
      run: |
+       # Checking 
        echo "::group::R CMD check"
        if ! pdflatex --version | head -n1; then echo "::warning ::pdflatex not found, using --no-manual"; XTRA=--no-manual; fi
+       ## avoid network issues
+       export _R_CHECK_CRAN_INCOMING_REMOTE_=false
        echo ''
        echo R_LIBS=$BLDIR/Rlib R CMD check ${{ inputs.check-flags }} $XTRA $SRCTAR
        cd $BLDIR
        R_LIBS=$BLDIR/Rlib R CMD check ${{ inputs.check-flags }} $XTRA $SRCTAR
        echo '::endgroup::'
+       if [ -e "${PACKAGE}.Rcheck/00install.out" ]; then
+         echo '::group::00install.out'
+         cat "${PACKAGE}.Rcheck/00install.out"
+         echo '::endgroup::'
+       fi
+       if [ -d "${PACKAGE}.Rcheck/tests" ]; then
+         for tf in `ls "${PACKAGE}.Rcheck/test/"*.Rout 2>/dev/null`; do
+           echo "::group::$tf"
+           cat "$tf"
+           echo '::endgroup::'
+         done
+       fi
      shell: bash
