@@ -16,19 +16,21 @@ runs:
    - name: Install R
      run: |
        # Install R
+       # Connectivity can be flaky, so allow retries
+       RCURL='curl --retry 4 --retry-all-errors -fsSL'
        if [ ${{ runner.os }} = Linux ]; then
          . /etc/os-release
          ## form OS like ubuntu-22.04
          OS="${ID}-${VERSION_ID}"
          echo "Installing R-${{ inputs.r-version }}-$OS"
-         curl -fsS -L \
+         $RCURL \
            "https://github.com/s-u/R-build/releases/download/${{ inputs.r-version }}-build/R-${{ inputs.r-version }}-${OS}.tar.xz" \
            | xzcat | sudo tar fx - -C /
        fi
        if [ ${{ runner.os }} = macOS ]; then
          ARCH=`uname -m`
          echo "Installing R-${{ matrix.r-version }}-$ARCH"
-         curl -fsS -L \
+         $RCURL \
            "https://mac.r-project.org/high-sierra/last-success/R-${{ inputs.r-version }}-${ARCH}.tar.xz" \
            | sudo tar fxj - -C /Library/Frameworks/
          sudo ln -sfn  /Library/Frameworks/R.framework/Resources/bin/R /usr/local/bin/R
@@ -36,7 +38,7 @@ runs:
        fi
        if [ ${{ runner.os }} = Windows ]; then
          echo Downloading R-${{ matrix.r-version }}.exe
-         curl -o rinst.exe -fsS -L \
+         $RCURL -o rinst.exe \
            "https://cloud.r-project.org/bin/windows/base/R-${{ inputs.r-version }}.exe"
          if [ ! -x rinst.exe ] ; then
            echo "::error ::ERROR: failed to download R installer"
