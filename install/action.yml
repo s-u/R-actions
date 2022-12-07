@@ -1,0 +1,63 @@
+name: 'Install R'
+description: 'Installs R'
+inputs:
+  r-version:
+    description: 'Desired R version. Only release and devel are guaranteed to work.'
+    required: false
+    default: 'release'
+  tools:
+    description: 'Type of the toolchain to install (currently only relevant on Windows), set to "none" to skip toolchain installation'
+    required: false
+    default: 'base'
+
+runs:
+  using: 'composite'
+  steps:
+   - name: Install R
+     run: |
+       # Install R
+       if [ ${{ runner.os }} = Linux ]; then
+         . /etc/os-release
+         ## form OS like ubuntu-22.04
+         OS="${ID}-${VERSION_ID}"
+         echo "Installing R-${{ inputs.r-version }}-$OS"
+         curl -fsS -L \
+           "https://github.com/s-u/R-build/releases/download/${{ inputs.r-version }}-build/R-${{ inputs.r-version }}-${OS}.tar.xz" \
+           | xzcat | sudo tar fx - -C /
+       fi
+       if [ ${{ runner.os }} = macOS ]; then
+         ARCH=`uname -m`
+         echo "Installing R-${{ matrix.r-version }}-$ARCH"
+         curl -fsS -L \
+           "https://mac.r-project.org/high-sierra/last-success/R-${{ inputs.r-version }}-${ARCH}.tar.xz" \
+           | sudo tar fxj - -C /Library/Frameworks/
+         sudo ln -sfn  /Library/Frameworks/R.framework/Resources/bin/R /usr/local/bin/R
+         sudo ln -sfn  /Library/Frameworks/R.framework/Resources/bin/Rscript /usr/local/bin/Rscript
+       fi
+       if [ ${{ runner.os }} = Windows ]; then
+         echo Downloading R-${{ matrix.r-version }}.exe
+         curl -o rinst.exe -fsS -L \
+           "https://cran.r-project.org/bin/windows/base/R-${{ inputs.r-version }}.exe"
+         if [ ! -x rinst.exe ] ; then
+           echo "::error ::ERROR: failed to download R installer"
+           exit 1
+         fi
+         echo Installing R
+         ./rinst.exe //VERYSILENT //SUPPRESSMSGBOXES //CURRENTUSER //DIR=`cygpath -wa ~/r`
+         rm -f rinst.exe
+         if [ ! -x ~/r/bin/R.exe ] ; then
+           echo "::error ::ERROR: failed to install R"
+           exit 1
+         fi
+         echo ~/r/bin >> $GITHUB_PATH
+         # Prevent interference from pre-installed R
+         echo "R_LIBS_USER=NULL" >> $GITHUB_ENV
+         echo "R_LIBS_SITE=NULL" >> $GITHUB_ENV
+       fi
+     shell: bash
+
+   - name: Install Tools
+     if: ${{ runner.os == 'Windows' && inputs.tools != 'none' }}
+        uses: kalibera/ucrt3/actions/toolchain-install@main
+        with:
+          toolchain-type: ${{ inputs.tools }}
