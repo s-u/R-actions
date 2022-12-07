@@ -8,7 +8,7 @@ inputs:
   tools:
     description: 'Type of the toolchain to install (currently only relevant on Windows), set to "none" to skip toolchain installation'
     required: false
-    default: 'base'
+    default: 'none'
 
 runs:
   using: 'composite'
@@ -37,7 +37,7 @@ runs:
        if [ ${{ runner.os }} = Windows ]; then
          echo Downloading R-${{ matrix.r-version }}.exe
          curl -o rinst.exe -fsS -L \
-           "https://cran.r-project.org/bin/windows/base/R-${{ inputs.r-version }}.exe"
+           "https://cloud.r-project.org/bin/windows/base/R-${{ inputs.r-version }}.exe"
          if [ ! -x rinst.exe ] ; then
            echo "::error ::ERROR: failed to download R installer"
            exit 1
