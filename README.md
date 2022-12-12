@@ -14,7 +14,7 @@ Minimal example:
 
 By default it expects the package's `DESCRIPTION` file in the root of the repository and no systems dependencies. It will run `R CMD build`, automatically install package dependencies from CRAN, run `R CMD INSTALL` and finally `R CMD check`.
 
-## Inputs
+### Inputs
 
 * `debian-deps`
 
@@ -36,7 +36,7 @@ By default it expects the package's `DESCRIPTION` file in the root of the reposi
 
     Optional script to use instead of `R CMD build` (e.g., `sh mkdist`). It is expected to create the package tar ball one level up from the repository directory (so the same as if one called `(cd .. && R CMD build <package>)`.
 
-## Examples
+### Examples
 
 A real example with external system dependencies:
 ```yaml
@@ -65,15 +65,43 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'windows-latest', 'macOS-10.15', 'ubuntu-20.04' ]
+        os: [ 'windows-2022', 'macOS-10.15', 'ubuntu-22.04' ]
+        r-version: [ release, devel ]
 
     steps:
       - uses: actions/checkout@v2
+      
+      - uses: s-u/R-actions/install@v1
+        with:
+          r-version: ${{ matrix.r-version }}
 
-      - uses: s-u/R-actions/pkg-check@master
+      - uses: s-u/R-actions/pkg-check@v1
 ```
 
-__NOTE__: The action does not modify the R configuration, it will use whichever R version has been provided. Therefore it is common to combine this action with something like `r-lib/actions/setup-r@master` to add multiple R versions to the check matrix.
+## install
+
+GitHub action to install R on the runner.
+
+Minimal example:
+
+```yaml
+  - uses: s-u/R-actions/install@v1
+```
+
+This installs a well-defined R based on CRAN tar balls, binaries (macOS and Windows) and releases. It is very fast to run.
+
+### Inputs
+
+* `r-version`
+
+    Version of R to install. Only `devel` and `release` are guaranteed to work on all platforms.
+
+* `tools`
+
+    Optional specification of the toolchian to install. Currently this is only used on Windows and passed as the `toolchain-type` of the `toolchain-install` actions from [ucrt3](https://github.com/kalibera/ucrt3), so the valid options are `none`, `base` and `full`.
+
+The binaries for the Linux runners are created using the [R-build](https://github.com/s-u/R-build) repository based on CRAN nightly tar balls which live in `/opt/R/` (with symlinks from `/usr/local`). The macOS builds come from [last-success](https://mac.r-project.org/high-sierra/last-success/) CRAN builds and Windows build from [pre-release](https://cran.r-project.org/bin/windows/base/rdevel.html) CRAN builds.
+
 
 ## tinytex
 
@@ -87,7 +115,7 @@ Minimal example:
 
 The runners don't have TeX by default so if you want to be able to check R package manuals, you will need to install it in some way and this action is just one of the possible ways.
 
-## Inputs
+### Inputs
 
 * `flavor`
 
