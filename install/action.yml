@@ -29,7 +29,7 @@ runs:
        fi
        if [ ${{ runner.os }} = macOS ]; then
          ARCH=`uname -m`
-         echo "Installing R-${{ matrix.r-version }}-$ARCH"
+         echo "Installing R-${{ inputs.r-version }}-$ARCH"
          $RCURL \
            "https://mac.r-project.org/high-sierra/last-success/R-${{ inputs.r-version }}-${ARCH}.tar.xz" \
            | sudo tar fxj - -C /Library/Frameworks/
@@ -40,7 +40,7 @@ runs:
          sudo chown $USER /Library/Frameworks/R.framework/Resources/site-library
        fi
        if [ ${{ runner.os }} = Windows ]; then
-         echo Downloading R-${{ matrix.r-version }}.exe
+         echo Downloading R-${{ inputs.r-version }}.exe
          $RCURL -o rinst.exe \
            "https://cloud.r-project.org/bin/windows/base/R-${{ inputs.r-version }}.exe"
          if [ ! -x rinst.exe ] ; then
