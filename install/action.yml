@@ -30,11 +30,32 @@ runs:
        if [ ${{ runner.os }} = macOS ]; then
          ARCH=`uname -m`
          echo "Installing R-${{ inputs.r-version }}-$ARCH"
-         $RCURL \
-           "https://mac.r-project.org/high-sierra/last-success/R-${{ inputs.r-version }}-${ARCH}.tar.xz" \
-           | sudo tar fxj - -C /Library/Frameworks/
+         if uname -r | grep ^1 >/dev/null; then ## high-sierra build
+           $RCURL \
+             "https://mac.r-project.org/high-sierra/last-success/R-${{ inputs.r-version }}-${ARCH}.tar.xz" \
+             | sudo tar fxj - -C /Library/Frameworks/
+         else # big-sur
+           $RCURL \
+             "https://mac.r-project.org/big-sur/last-success/R-${{ inputs.r-version }}-${ARCH}.tar.xz" \
+             | sudo tar fxj - -C /Library/Frameworks/
+         fi
          sudo ln -sfn  /Library/Frameworks/R.framework/Resources/bin/R /usr/local/bin/R
          sudo ln -sfn  /Library/Frameworks/R.framework/Resources/bin/Rscript /usr/local/bin/Rscript
+         if [ -e /opt/homebrew/bin/R ]; then
+           echo Removing Homebrew R ...
+           for i in R Rscript; do rm -f /opt/homebrew/bin/$i; done
+         fi
+         if [ ! -e /opt/R ]; then
+           sudo mkdir /opt/R
+           sudo chown $USER /opt/R
+           mkdir -p /opt/R/$ARCH/bin
+           for i in R Rscript; do ln -s /Library/Frameworks/R.framework/Resources/bin/$i /opt/R/$ARCH/bin/$i; done
+         fi
+         # prepend /opt/R to future PATHs
+         echo /opt/R/$ARCH/bin > newPATH
+         cat $GITHUB_PATH >> newPATH
+         cat newPATH > $GITHUB_PATH
+         rm -f newPATH
          # make sure site-library exists and is writable (unlike R.home itself)
          sudo mkdir /Library/Frameworks/R.framework/Resources/site-library
          sudo chown $USER /Library/Frameworks/R.framework/Resources/site-library
@@ -63,6 +84,6 @@ runs:
 
    - name: Install Tools
      if: ${{ runner.os == 'Windows' && inputs.tools != 'none' }}
-     uses: s-u/ucrt3/actions/toolchain-install@main
+     uses: kalibera/ucrt3/actions/toolchain-install@main
      with:
        toolchain-type: ${{ inputs.tools }}
