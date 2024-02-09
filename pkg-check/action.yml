@@ -81,10 +81,10 @@ runs:
      run: |
          # Installation from mac.R-project.org
          echo "::group::Install macOS system dependencies"
-         for i in ${{ inputs.macos-deps }}; do
-           echo -n "  $i"
-           curl -s https://mac.r-project.org/bin/darwin17/x86_64/$i-darwin.17-x86_64.tar.xz | sudo tar fxj - --strip 2 -C /usr/local
-         done
+         ARCH=`uname -m`
+         if [ ! -e /opt/R/$ARCH ]; then sudo mkdir -p /opt/R/$ARCH; sudo chown -R $USER /opt/R; fi
+         Rscript -e 'dep="${{ inputs.macos-deps }}"; dep=unlist(strsplit(dep, "[, ]+")); source("https://mac.R-project.org/bin/install.R"); install.libs(dep)'
+         if ! echo $PATH | grep /opt/R/$ARCH/bin >/dev/null; then echo /opt/R/$ARCH/bin > newPATH; cat $GITHUB_PATH >> newPATH; cat newPATH > $GITHUB_PATH; fi
          echo ''
          echo '::endgroup::'
      shell: bash
