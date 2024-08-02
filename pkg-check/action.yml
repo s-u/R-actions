@@ -148,7 +148,7 @@ runs:
        echo ''
        echo R_LIBS=$BLDIR/Rlib R CMD check ${{ inputs.check-flags }} $XTRA $SRCTAR
        cd $BLDIR
-       R_LIBS=$BLDIR/Rlib R CMD check ${{ inputs.check-flags }} $XTRA $SRCTAR
+       R_LIBS=$BLDIR/Rlib R CMD check ${{ inputs.check-flags }} $XTRA $SRCTAR || CHK_FAIL=yes
        echo '::endgroup::'
        if [ -e "${PACKAGE}.Rcheck/00install.out" ]; then
          echo '::group::00install.out'
@@ -161,5 +161,9 @@ runs:
            cat "$tf"
            echo '::endgroup::'
          done
+       fi
+       if [ "x$CHK_FAIL" = xyes ]; then
+         echo "R CMD check: FAILED" >&2
+         exit 1
        fi
      shell: bash
