@@ -9,7 +9,7 @@ GitHub action to build, install and check an R package.
 Minimal example:
 
 ```yaml
-  - uses: s-u/R-actions/pkg-check@v1
+  - uses: s-u/R-actions/pkg-check@v2
 ```
 
 By default it expects the package's `DESCRIPTION` file in the root of the repository and no systems dependencies. It will run `R CMD build`, automatically install package dependencies from CRAN, run `R CMD INSTALL` and finally `R CMD check`.
@@ -22,7 +22,7 @@ By default it expects the package's `DESCRIPTION` file in the root of the reposi
     
 * `macos-deps`
 
-    Optional list of macOS dependencies from [R-macos recipes](https://github.com/R-macos/recipes) (with versions) that need to be installed.
+    Optional list of macOS dependencies from [R-macos recipes](https://github.com/R-macos/recipes) that need to be installed. Furhter dependencies are determined recursively based on the avaiable binaries in https://mac.r-project.org/bin/ so you only need to specify direct dependencies.
 
 * `pkg-path`
 
@@ -40,10 +40,10 @@ By default it expects the package's `DESCRIPTION` file in the root of the reposi
 
 A real example with external system dependencies:
 ```yaml
-  - uses: s-u/R-actions/pkg-check@v1
+  - uses: s-u/R-actions/pkg-check@v2
     with:
       debian-deps: libtiff-dev
-      macos-deps: pkgconfig-0.28 xz-5.2.4 jpeg-9 tiff-4.1.0
+      macos-deps: tiff
       check-flags: --as-cran
 ```
 
@@ -65,17 +65,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'windows-2022', 'macOS-10.15', 'ubuntu-22.04' ]
+        os: [ macos-13, macos-14, ubuntu-22.04, windows-2022 ]
         r-version: [ release, devel ]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       
-      - uses: s-u/R-actions/install@v1
+      - uses: s-u/R-actions/install@v2
         with:
           r-version: ${{ matrix.r-version }}
+          tools: base
 
-      - uses: s-u/R-actions/pkg-check@v1
+      - uses: s-u/R-actions/pkg-check@v2
 ```
 
 ## install
@@ -85,7 +86,7 @@ GitHub action to install R on the runner.
 Minimal example:
 
 ```yaml
-  - uses: s-u/R-actions/install@v1
+  - uses: s-u/R-actions/install@v2
 ```
 
 This installs a well-defined R based on CRAN tar balls, binaries (macOS and Windows) and releases. It is very fast to run.
