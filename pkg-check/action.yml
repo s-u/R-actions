@@ -83,7 +83,7 @@ runs:
          echo "::group::Install macOS system dependencies"
          ARCH=`uname -m`
          if [ ! -e /opt/R/$ARCH ]; then sudo mkdir -p /opt/R/$ARCH; sudo chown -R $USER /opt/R; fi
-         Rscript -e 'dep="${{ inputs.macos-deps }}"; dep=unlist(strsplit(dep, "[, ]+")); source("https://mac.R-project.org/bin/install.R"); install.libs(dep)'
+         SILENT_INSTALL_R=1 Rscript -e 'dep="${{ inputs.macos-deps }}"; dep=unlist(strsplit(dep, "[, ]+")); source("https://mac.R-project.org/bin/install.R"); install.libs(dep)'
          if ! echo $PATH | grep /opt/R/$ARCH/bin >/dev/null; then echo /opt/R/$ARCH/bin > newPATH; cat $GITHUB_PATH >> newPATH; cat newPATH > $GITHUB_PATH; fi
          echo ''
          echo '::endgroup::'
