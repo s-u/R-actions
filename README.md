@@ -40,16 +40,15 @@ By default it expects the package's `DESCRIPTION` file in the root of the reposi
 
 A real example with external system dependencies:
 ```yaml
-  - uses: s-u/R-actions/pkg-check@v2
-    with:
-      debian-deps: libtiff-dev
-      macos-deps: tiff
-      check-flags: --as-cran
+   - uses: s-u/R-actions/pkg-check@v2
+     with:
+       debian-deps: libssl-dev
+       macos-deps: openssl
+       windows-deps: openssl
+       check-flags: --as-cran
 ```
 
-See the [pkg-check-test repository](https://github.com/s-u/pkg-check-test) for this example in action (based on the [tiff package](https://github.com/s-u/tiff)).
-
-Full `check.yaml` example to put in `.github/actions` which tests on Ubuntu, macOS and Windows:
+Full `check.yaml` example to put in `.github/actions` which tests on Ubuntu, macOS (x86_64 and arm64) and Windows:
 
 ```yaml
 on: [push, pull_request]
