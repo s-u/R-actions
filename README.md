@@ -38,7 +38,7 @@ By default it expects the package's `DESCRIPTION` file in the root of the reposi
 
 ### Examples
 
-A real example with external system dependencies:
+A real example with external system dependencies (from the [PKI](https://github.com/s-u/PKI/blob/master/.github/workflows/check.yml) package):
 ```yaml
    - uses: s-u/R-actions/pkg-check@v2
      with:
