@@ -48,7 +48,7 @@ A real example with external system dependencies:
        check-flags: --as-cran
 ```
 
-Full `check.yaml` example to put in `.github/actions` which tests on Ubuntu, macOS (x86_64 and arm64) and Windows:
+Full `check.yaml` example to put in `.github/workflows` which tests on Ubuntu, macOS (x86_64 and arm64) and Windows:
 
 ```yaml
 on: [push, pull_request]
