@@ -59,6 +59,11 @@ runs:
          # make sure site-library exists and is writable (unlike R.home itself)
          sudo mkdir /Library/Frameworks/R.framework/Resources/site-library
          sudo chown $USER /Library/Frameworks/R.framework/Resources/site-library
+         # install Fortran
+         echo Installing FORTRAN compiler ...
+         $RCURL \
+             "https://mac.r-project.org/tools/gfortran/R-${{ inputs.r-version }}-gfortran.tar.xz" \
+             | sudo tar xj -C /
        fi
        if [ ${{ runner.os }} = Windows ]; then
          echo Downloading R-${{ inputs.r-version }}.exe
