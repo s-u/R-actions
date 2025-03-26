@@ -36,6 +36,10 @@ runs:
            rm TinyTeX.zip
            mv TinyTex ~/TinyTeX
          else
+           echo arch: `uname -m`
+           if uname -m | grep ^a >/dev/null; then ## arm64 is not available from the official repo yet
+             TINYTEX_URL="https://github.com/s-u/tinytex/releases/download/daily/TinyTeX/$TINYTEX_INSTALLER"
+           fi
            wget --retry-connrefused --progress=dot:giga -O TinyTeX.tar.gz ${TINYTEX_URL}.tar.gz
            tar xzf TinyTeX.tar.gz -C ~
            rm TinyTeX.tar.gz
