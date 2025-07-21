@@ -84,7 +84,7 @@ runs:
          ARCH=`uname -m`
          if [ ! -e /opt/R/$ARCH/bin ]; then sudo mkdir -p /opt/R/$ARCH/bin; sudo chown -R $USER /opt/R; fi
          curl -sfS https://mac.r-project.org/tools/pandoc.xz | xz -dc > /opt/R/$ARCH/bin/pandoc && chmod a+x /opt/R/$ARCH/bin/pandoc
-         SILENT_INSTALL_R=1 Rscript -e 'dep="${{ inputs.macos-deps }} tidy"; dep=unique(unlist(strsplit(dep, "[, ]+"))); source("https://mac.R-project.org/bin/install.R"); install.libs(dep)'
+         SILENT_INSTALL_R=1 Rscript -e 'dep="${{ inputs.macos-deps }} tidy"; dep=unique(unlist(strsplit(dep, "[, ]+"))); dep=dep[nzchar(dep)]; if (length(dep)) { source("https://mac.R-project.org/bin/install.R"); install.libs(dep) }'
          if ! echo $PATH | grep /opt/R/$ARCH/bin >/dev/null; then echo /opt/R/$ARCH/bin > newPATH; cat $GITHUB_PATH >> newPATH; cat newPATH > $GITHUB_PATH; fi
          echo ''
          echo '::endgroup::'
