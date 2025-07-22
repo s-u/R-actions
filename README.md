@@ -110,7 +110,7 @@ GitHub action to install [TinyTex](https://yihui.org/tinytex/)
 Minimal example:
 
 ```yaml
-  - uses: s-u/R-actions/tinytex@v1
+  - uses: s-u/R-actions/tinytex@v2
 ```
 
 The runners don't have TeX by default so if you want to be able to check R package manuals, you will need to install it in some way and this action is just one of the possible ways.
