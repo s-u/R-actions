@@ -72,7 +72,7 @@ runs:
      run: |
          # apt-get install
          echo "::group::Install Linux system dependencies"
-         sudo apt-get install -y ${{ inputs.debian-deps }} pandoc devscripts tidy
+         sudo apt-get update && sudo apt-get install -y ${{ inputs.debian-deps }} pandoc devscripts tidy
          echo '::endgroup::'
      shell: bash
 
