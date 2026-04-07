@@ -29,16 +29,15 @@ runs:
        fi
        if [ ${{ runner.os }} = macOS ]; then
          ARCH=`uname -m`
-         echo "Installing R-${{ inputs.r-version }}-$ARCH"
-         if uname -r | grep ^1 >/dev/null; then ## high-sierra build
-           $RCURL \
-             "https://mac.r-project.org/high-sierra/last-success/R-${{ inputs.r-version }}-${ARCH}.tar.xz" \
+         ## determine build name to use
+         oscode=sonoma
+         if [ $ARCH = x86_64 ]; then oscode=big-sur; fi  ## x86_64 is frozen at big-sur
+         if echo "${{ inputs.r-version }}" | grep '^4[.][1-5]' > /dev/null; then oscode=big-sur; fi ## no sonoma before 4.6
+         if uname -r | grep ^1 >/dev/null; then oscode=high-sierra; fi ## very old            
+         echo "Installing R-${{ inputs.r-version }}-$ARCH ($oscode build)"
+         $RCURL \
+             "https://mac.r-project.org/$oscode/last-success/R-${{ inputs.r-version }}-${ARCH}.tar.xz" \
              | sudo tar fxj - -C /Library/Frameworks/
-         else # big-sur
-           $RCURL \
-             "https://mac.r-project.org/big-sur/last-success/R-${{ inputs.r-version }}-${ARCH}.tar.xz" \
-             | sudo tar fxj - -C /Library/Frameworks/
-         fi
          sudo ln -sfn  /Library/Frameworks/R.framework/Resources/bin/R /usr/local/bin/R
          sudo ln -sfn  /Library/Frameworks/R.framework/Resources/bin/Rscript /usr/local/bin/Rscript
          if [ -e /opt/homebrew/bin/R ]; then
