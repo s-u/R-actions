@@ -64,7 +64,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos-13, macos-14, ubuntu-22.04, windows-2022 ]
+        os: [ macos-14, macos-15-intel, windows-2022, ubuntu-22.04, ubuntu-24.04 ]
         r-version: [ release, devel ]
 
     steps:
@@ -100,7 +100,7 @@ This installs a well-defined R based on CRAN tar balls, binaries (macOS and Wind
 
     Optional specification of the toolchian to install. Currently this is only used on Windows and passed as the `toolchain-type` of the `toolchain-install` actions from [ucrt3](https://github.com/kalibera/ucrt3), so the valid options are `none`, `base` and `full`.
 
-The binaries for the Linux runners are created using the [R-build](https://github.com/s-u/R-build) repository based on CRAN nightly tar balls which live in `/opt/R/` (with symlinks from `/usr/local`). The macOS builds come from [last-success](https://mac.r-project.org/high-sierra/last-success/) CRAN builds and Windows build from [pre-release](https://cran.r-project.org/bin/windows/base/rdevel.html) CRAN builds.
+The binaries for the Linux runners are created using the [R-build](https://github.com/s-u/R-build) repository based on CRAN nightly tar balls which live in `/opt/R/` (with symlinks from `/usr/local`). The macOS builds come from [last-success](https://mac.r-project.org/sonoma/last-success/) CRAN builds (corresponding to the macOS used) and Windows build from [pre-release](https://cran.r-project.org/bin/windows/base/rdevel.html) CRAN builds.
 
 
 ## tinytex
